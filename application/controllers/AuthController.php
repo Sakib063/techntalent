@@ -11,10 +11,9 @@ class AuthController extends CI_Controller{
 			'password'=>$this->input->post('password'),
 		];
 		if($data['username']=='admin@email.com' && $data['password']=='1234'){
-			$token = bin2hex(random_bytes(16)); // Secure token
+			$token = bin2hex(random_bytes(16));
 			$session_data=[
-				'user_id'   => $auth->id,
-				'username'  => $auth->username,
+				'username'  => $data['username'],
 				'token'     => $token,
 				'logged_in' => true,
 			];
