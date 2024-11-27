@@ -60,24 +60,25 @@
 				<th class="border-1 p-3">Answers</th>
 				<th class="border-1 p-3">Actions</th>
 			</tr>
-			<?php foreach($questions as $question){ ?>
+			<?php $counter = 1; foreach($questions as $question){ ?>
 				<tr data-id="<?php echo $question['question_id']; ?>">
 					<td class="border-1 p-3">
-						<?php echo $question['question_id']; ?>
+						<?php echo $counter++; ?>
 					</td>
 					<td class="border-1 p-3">
 						<?php echo $question['question_title']; ?>
 					</td>
 					<td class="border-1 p-3">
-						<ul style="list-style:none">
-							<li>
-								<?php echo $question['answer_title']; ?>
-								<?php echo $question['is_correct'] ? '<i class="bi bi-hand-thumbs-up"></i>' : ''; ?>
-							</li>
-						</ul>
+						<?php foreach ($question['answers'] as $answer) { ?>
+							<div>
+								<?php echo $answer['answer_title']; ?>
+								<?php echo $answer['is_correct'] ? '<i class="bi bi-hand-thumbs-up"></i>' : ''; ?>
+							</div>
+							<hr>
+						<?php } ?>
 					</td>
-					<td class="d-flex flex-row border-1 p-4 gap-1">
-						<button class="btn-delete btn btn-danger" data-id="<?php echo $question['question_id']; ?>">Delete</button>
+					<td class="border-1 p-3">
+						<button class="btn-delete btn btn-danger mb-1" data-id="<?php echo $question['question_id']; ?>">Delete</button>
 						<form method="POST">
 							<input type="submit" value="Edit">
 						</form>
@@ -119,28 +120,30 @@
 			const modal=bootstrap.Modal.getOrCreateInstance(modal_element)
 			modal.hide()
 			document.getElementById('add_question_form').reset()
+			// document.getElementById('add_answer_form').reset()
 
 
 			fetch('<?php echo base_url('question/store'); ?>', {
 				method: 'POST',
 				body: formData,
 			}).then(response => response.json())
-				.then(data=>{
-					const question_id=data
-					const titles=document.getElementsByName('title[]')
-					const is_correct=document.getElementsByName('is_correct[]')
+			.then(data=>{
+				const question_id=data
+				const titles=document.getElementsByName('title[]')
+				const is_correct=document.getElementsByName('is_correct[]')
 
-					for(let i=0;i<titles.length;i++){
-						formData = new FormData()
-						formData.append('question_id',question_id)
-						formData.append('answer_title',titles[i].value)
-						formData.append('is_correct',is_correct[i].checked ? 1 : 0)
-						fetch('<?php echo base_url('answer/store'); ?>', {
-							method: 'POST',
-							body: formData,
-						})
-					}
-				})
+				for(let i=0;i<titles.length;i++){
+					formData = new FormData()
+					formData.append('question_id',question_id)
+					console.log(titles[i].value)
+					formData.append('answer_title',titles[i].value)
+					formData.append('is_correct',is_correct[i].checked ? 1 : 0)
+					fetch('<?php echo base_url('answer/store'); ?>', {
+						method: 'POST',
+						body: formData,
+					})
+				}
+			})
 		})
 
 		document.addEventListener('DOMContentLoaded',()=>{
@@ -148,7 +151,6 @@
 
 			buttons.forEach(button => {
 					button.addEventListener('click',function(){
-						console.log('button pressed')
 						const id=this.getAttribute('data-id')
 						const row=document.querySelector(`tr[data-id="${id}"]`)
 

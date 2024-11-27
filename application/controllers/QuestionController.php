@@ -6,12 +6,30 @@ class QuestionController extends CI_Controller{
 		parent::__construct();
 		$this->load->model('QuestionModel');
 	}
-	public function index(): void{
+	public function index(): void {
 		if (!$this->session->userdata('logged_in')) {
 			redirect('login');
 		}
-		$questions=$this->QuestionModel->fetch();
-		$this->load->view('question',['questions' => $questions]);
+
+		$raw_questions = $this->QuestionModel->fetch();
+
+		$questions = [];
+		foreach ($raw_questions as $row) {
+			$question_id = $row['question_id'];
+			if (!isset($questions[$question_id])) {
+				$questions[$question_id] = [
+					'question_id' => $row['question_id'],
+					'question_title' => $row['question_title'],
+					'answers' => [],
+				];
+			}
+			$questions[$question_id]['answers'][] = [
+				'answer_title' => $row['answer_title'],
+				'is_correct' => $row['is_correct'],
+			];
+		}
+
+		$this->load->view('question', ['questions' => $questions]);
 	}
 
 	public function store(): void{
