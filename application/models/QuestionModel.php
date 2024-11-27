@@ -8,8 +8,9 @@ class QuestionModel extends CI_Model{
 		$query=$this->db->get();
 		return $query->result_array();
 	}
-	public function create($data){
+	public function create($data): int{
 		$this->db->insert('questions',$data);
+		return $this->db->insert_id();
 	}
 
 	public function delete($id){

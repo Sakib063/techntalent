@@ -29,8 +29,21 @@
 						<label for="question">Question</label>
 						<input name="question" id="question" required>
 						<br>
-						<input class="btn btn-primary" type="submit">
 					</form>
+					<form id="add_answer_form">
+						<div id="answer_fields">
+							<div class="answer_group">
+								<label for="title_0">Answer</label>
+								<input type="text" id="title_0" name="title[]" class="form-control" required>
+								<br>
+								<label for="is_correct_0">Is Correct?</label>
+								<input id="is_correct_0" type="checkbox" name="is_correct[]" class="form-check-input">
+								<br>
+							</div>
+						</div>
+						<button type="button" id="add_more_fields" class="btn btn-secondary my-2">Add Another Answer</button>
+					</form>
+					<button class="btn btn-primary" id="submit_all">Submit</button>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -56,7 +69,7 @@
 						<?php echo $question['question_title']; ?>
 					</td>
 					<td class="border-1 p-3">
-						<ul>
+						<ul style="list-style:none">
 							<li>
 								<?php echo $question['answer_title']; ?>
 								<?php echo $question['is_correct'] ? '<i class="bi bi-hand-thumbs-up"></i>' : ''; ?>
@@ -76,11 +89,30 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 	<script>
-		document.getElementById('add_question_form').addEventListener('submit', function (e) {
+		let count = 1
+
+		document.getElementById('add_more_fields').addEventListener('click',function () {
+			const add_answer_group = document.createElement('div')
+			add_answer_group.classList.add('answer_group')
+
+			add_answer_group.innerHTML = `
+			  <label for="title_${count}">Answer</label>
+			  <input id="title_${count}" name="title[]" class="form-control" required>
+			  <br>
+			  <label for="is_correct_${count}">Is Correct?</label>
+			  <input id="is_correct_${count}" type="checkbox" name="is_correct[]" class="form-check-input">
+			  <br>
+			`
+			document.getElementById('answer_fields').appendChild(add_answer_group)
+
+			count++
+		})
+
+		document.getElementById('submit_all').addEventListener('click',function(e){
 			e.preventDefault()
 
 			const question = document.getElementById('question').value
-			const formData = new FormData()
+			let formData = new FormData()
 			formData.append('question', question)
 
 			const modal_element=document.getElementById('question_modal')
@@ -88,12 +120,27 @@
 			modal.hide()
 			document.getElementById('add_question_form').reset()
 
-			
 
 			fetch('<?php echo base_url('question/store'); ?>', {
 				method: 'POST',
 				body: formData,
-			})
+			}).then(response => response.json())
+				.then(data=>{
+					const question_id=data
+					const titles=document.getElementsByName('title[]')
+					const is_correct=document.getElementsByName('is_correct[]')
+
+					for(let i=0;i<titles.length;i++){
+						formData = new FormData()
+						formData.append('question_id',question_id)
+						formData.append('answer_title',titles[i].value)
+						formData.append('is_correct',is_correct[i].checked ? 1 : 0)
+						fetch('<?php echo base_url('answer/store'); ?>', {
+							method: 'POST',
+							body: formData,
+						})
+					}
+				})
 		})
 
 		document.addEventListener('DOMContentLoaded',()=>{

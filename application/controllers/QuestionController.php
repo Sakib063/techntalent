@@ -6,7 +6,7 @@ class QuestionController extends CI_Controller{
 		parent::__construct();
 		$this->load->model('QuestionModel');
 	}
-	public function index(){
+	public function index(): void{
 		if (!$this->session->userdata('logged_in')) {
 			redirect('login');
 		}
@@ -14,20 +14,16 @@ class QuestionController extends CI_Controller{
 		$this->load->view('question',['questions' => $questions]);
 	}
 
-	public function store(){
+	public function store(): void{
 		$data=[
 			'title'=>$this->input->post('question'),
 		];
-		$inserted=$this->QuestionModel->create($data);
-		if($inserted){
-			echo json_encode(['success' => true]);
-		}
+		$question_id=$this->QuestionModel->create($data);
+		$this->output->set_content_type('application/json')->set_output(json_encode($question_id));
 	}
 
-	public function delete(){
+	public function delete(): void{
 		$id=$this->input->post('question_id');
-
-		echo "Received question_id: " . $id;
 		$this->QuestionModel->delete($id);
 	}
 

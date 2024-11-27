@@ -5,4 +5,8 @@ class AnswerModel extends CI_Model{
 		$query=$this->db->get('answers');
 		return $query->result_array();
 	}
+
+	public function create($data){
+		$this->db->insert('answers',$data);
+	}
 }

@@ -53,17 +53,14 @@ $route['default_controller'] = 'AuthController';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
-/**
- * User Authorization
- **/
+
 $route['login']='AuthController';
 $route['login/authenticate']='AuthController/login';
 $route['logout']='AuthController/logout';
 
-/**
- * Question Page
- **/
 $route['question']='QuestionController';
 $route['question/store']='QuestionController/store';
 $route['question/delete']='QuestionController/delete';
+
+$route['answer/store']='AnswerController/store';
 
