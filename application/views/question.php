@@ -16,7 +16,6 @@
 	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#question_modal">
 		Add Question
 	</button>
-
 	<div class="modal fade" id="question_modal" tabindex="-1" role="dialog" aria-labelledby="modal_label" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
@@ -51,6 +50,32 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="modal fade" id="update_question_modal" tabindex="-1" role="dialog" aria-labelledby="update_modal_label" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="update_modal_label">Update Question</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="update_question_form">
+						<label for="update_question">Question</label>
+						<input name="update_question" id="update_question" required class="form-control">
+						<br>
+					</form>
+					<form id="update_answer_form">
+						<div id="update_answer_fields"></div>
+					</form>
+					<button class="btn btn-primary" id="submit_update">Update</button>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 
 	<div class="d-flex justify-content-center align-items-center">
 		<table>
@@ -126,6 +151,85 @@
 			})
 		})
 
+		function edit_handler(data) {
+			const buttons = document.querySelectorAll('.btn-edit');
+
+			buttons.forEach((button) => {
+				button.addEventListener('click', function () {
+					const question_id = this.getAttribute('data-id');
+					const question = data[question_id];
+
+					document.getElementById('update_question').value = question.question_title;
+
+					const updateAnswerFields = document.getElementById('update_answer_fields');
+					updateAnswerFields.innerHTML = '';
+
+					question.answers.forEach((answer, index) => {
+						const answerGroup = document.createElement('div');
+						answerGroup.classList.add('answer_group');
+
+						answerGroup.innerHTML = `
+					<label for="title_${index}">Answer</label>
+					<input id="title_${index}" name="title[]" value="${answer.answer_title}" class="form-control" required>
+					<br>
+					<label for="is_correct_${index}">Is Correct?</label>
+					<input id="is_correct_${index}" type="checkbox" name="is_correct[]" class="form-check-input" ${
+							Number(answer.is_correct) === 1 ? 'checked' : ''
+						}>
+					<br>
+				`;
+
+						updateAnswerFields.appendChild(answerGroup);
+					});
+
+					const updateModal = bootstrap.Modal.getOrCreateInstance(
+						document.getElementById('update_question_modal')
+					);
+					updateModal.show();
+
+					document.getElementById('submit_update').onclick = function () {
+						submit_update(question_id);
+					};
+				});
+			});
+		}
+
+		function submit_update(question_id) {
+			const question_title = document.getElementById('update_question').value;
+			const titles = document.getElementsByName('title[]');
+			const isCorrects = document.getElementsByName('is_correct[]');
+
+			let formData = new FormData();
+			formData.append('question_id', question_id);
+			formData.append('question_title', question_title);
+
+			fetch('<?php echo base_url('question/update'); ?>', {
+				method: 'POST',
+				body: formData,
+			}).then(response => response.json())
+				.then(data=>{
+					console.log('quest',data)
+					for (let i = 0; i < titles.length; i++) {
+						let formData = new FormData();
+						formData.append('answer_title', titles[i].value);
+						formData.append('is_correct', isCorrects[i].checked ? 1 : 0);
+
+						fetch('<?php echo base_url('answer/update'); ?>', {
+							method: 'POST',
+							body: formData,
+						});
+					}
+				})
+				.then(() => {
+					fetch_questions();
+					const updateModal = bootstrap.Modal.getOrCreateInstance(
+						document.getElementById('update_question_modal')
+					);
+					updateModal.hide();
+				});
+		}
+
+
 
 		function delete_handler(){
 			const buttons=document.querySelectorAll('.btn-delete');
@@ -151,7 +255,6 @@
 			fetch('<?php echo base_url('question/fetch'); ?>')
 				.then((response) => response.json())
 				.then((data) => {
-					console.log(data)
 					const tableBody = document.getElementById('questions_table_body');
 					tableBody.innerHTML = '';
 
@@ -164,7 +267,7 @@
 								(answer) => `
                                     <div>
                                         ${answer.answer_title} ${
-									answer.is_correct ? '<i class="bi bi-hand-thumbs-up"></i>' : ''
+									Number(answer.is_correct)===1 ? '<i class="bi bi-hand-thumbs-up"></i>' : ''
 								}
                                     </div>
                                     <hr>
@@ -179,15 +282,14 @@
                                 <td class="border-1 p-3">${answersHtml}</td>
                                 <td class="border-1 p-3">
                                     <button class="btn-delete btn btn-danger mb-1" data-id="${questionId}">Delete</button>
-                                    <form method="POST">
-                                        <input type="submit" value="Edit">
-                                    </form>
+                                    <button class="btn-edit btn btn-warning mb-1" data-id="${questionId}">Edit</button>
                                 </td>
                             </tr>
                         `;
 					}
 
 					delete_handler();
+					edit_handler(data);
 				});
 		}
 

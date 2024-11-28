@@ -13,6 +13,12 @@ class QuestionModel extends CI_Model{
 		return $this->db->insert_id();
 	}
 
+	public function update($id, $title){
+		$this->db->where('id',$id);
+		$this->db->set('title', $title);
+		$this->db->update('questions');
+	}
+
 	public function delete($id){
 		$this->db->where('id',$id);
 		$this->db->delete('questions');

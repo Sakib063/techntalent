@@ -45,9 +45,19 @@ class QuestionController extends CI_Controller{
 		$this->output->set_content_type('application/json')->set_output(json_encode($question_id));
 	}
 
+	public function update(){
+		$question_id = $this->input->post('question_id');
+		$question_title = $this->input->post('question_title');
+		$update_status = $this->QuestionModel->update($question_id,$question_title);
+		if ($update_status) {
+			echo json_encode(['success' => true]);
+		} else {
+			echo json_encode(['success' => false, 'message' => 'Failed to update the question']);
+		}
+	}
+
 	public function delete(): void{
 		$id=$this->input->post('question_id');
 		$this->QuestionModel->delete($id);
 	}
-
 }
