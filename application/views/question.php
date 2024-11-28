@@ -226,6 +226,8 @@
 						document.getElementById('update_question_modal')
 					)
 					updateModal.hide()
+					document.getElementById('update_question_form').reset()
+					document.getElementById('update_answer_form').reset()
 				});
 		}
 
