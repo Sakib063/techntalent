@@ -60,111 +60,137 @@
 				<th class="border-1 p-3">Answers</th>
 				<th class="border-1 p-3">Actions</th>
 			</tr>
-			<?php $counter = 1; foreach($questions as $question){ ?>
-				<tr data-id="<?php echo $question['question_id']; ?>">
-					<td class="border-1 p-3">
-						<?php echo $counter++; ?>
-					</td>
-					<td class="border-1 p-3">
-						<?php echo $question['question_title']; ?>
-					</td>
-					<td class="border-1 p-3">
-						<?php foreach ($question['answers'] as $answer) { ?>
-							<div>
-								<?php echo $answer['answer_title']; ?>
-								<?php echo $answer['is_correct'] ? '<i class="bi bi-hand-thumbs-up"></i>' : ''; ?>
-							</div>
-							<hr>
-						<?php } ?>
-					</td>
-					<td class="border-1 p-3">
-						<button class="btn-delete btn btn-danger mb-1" data-id="<?php echo $question['question_id']; ?>">Delete</button>
-						<form method="POST">
-							<input type="submit" value="Edit">
-						</form>
-					</td>
-				</tr>
-			<?php } ?>
+			<tbody id="questions_table_body">
+
+			</tbody>
 		</table>
 	</div>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 	<script>
-		let count = 1
+		document.addEventListener('DOMContentLoaded',()=>{
+			fetch_questions()
 
-		document.getElementById('add_more_fields').addEventListener('click',function () {
-			const add_answer_group = document.createElement('div')
-			add_answer_group.classList.add('answer_group')
+			let count = 1
+			document.getElementById('add_more_fields').addEventListener('click',function () {
+				const add_answer_group = document.createElement('div')
+				add_answer_group.classList.add('answer_group')
 
-			add_answer_group.innerHTML = `
-			  <label for="title_${count}">Answer</label>
-			  <input id="title_${count}" name="title[]" class="form-control" required>
-			  <br>
-			  <label for="is_correct_${count}">Is Correct?</label>
-			  <input id="is_correct_${count}" type="checkbox" name="is_correct[]" class="form-check-input">
-			  <br>
-			`
-			document.getElementById('answer_fields').appendChild(add_answer_group)
+				add_answer_group.innerHTML = `
+				  <label for="title_${count}">Answer</label>
+				  <input id="title_${count}" name="title[]" class="form-control" required>
+				  <br>
+				  <label for="is_correct_${count}">Is Correct?</label>
+				  <input id="is_correct_${count}" type="checkbox" name="is_correct[]" class="form-check-input">
+				  <br>
+				`
+				document.getElementById('answer_fields').appendChild(add_answer_group)
 
-			count++
-		})
+				count++
+			})
 
-		document.getElementById('submit_all').addEventListener('click',function(e){
-			e.preventDefault()
+			document.getElementById('submit_all').addEventListener('click',function(e){
+				e.preventDefault()
 
-			const question = document.getElementById('question').value
-			let formData = new FormData()
-			formData.append('question', question)
+				const question = document.getElementById('question').value
+				let formData = new FormData()
+				formData.append('question', question)
 
-			const modal_element=document.getElementById('question_modal')
-			const modal=bootstrap.Modal.getOrCreateInstance(modal_element)
-			modal.hide()
-			document.getElementById('add_question_form').reset()
-			// document.getElementById('add_answer_form').reset()
+				const modal_element=document.getElementById('question_modal')
+				const modal=bootstrap.Modal.getOrCreateInstance(modal_element)
 
+				fetch('<?php echo base_url('question/store'); ?>', {
+					method: 'POST',
+					body: formData,
+				}).then(response => response.json())
+				.then(data=>{
+					const question_id=data
+					const titles=document.getElementsByName('title[]')
+					const is_correct=document.getElementsByName('is_correct[]')
 
-			fetch('<?php echo base_url('question/store'); ?>', {
-				method: 'POST',
-				body: formData,
-			}).then(response => response.json())
-			.then(data=>{
-				const question_id=data
-				const titles=document.getElementsByName('title[]')
-				const is_correct=document.getElementsByName('is_correct[]')
-
-				for(let i=0;i<titles.length;i++){
-					formData = new FormData()
-					formData.append('question_id',question_id)
-					console.log(titles[i].value)
-					formData.append('answer_title',titles[i].value)
-					formData.append('is_correct',is_correct[i].checked ? 1 : 0)
-					fetch('<?php echo base_url('answer/store'); ?>', {
-						method: 'POST',
-						body: formData,
-					})
-				}
+					for(let i=0;i<titles.length;i++){
+						formData = new FormData()
+						formData.append('question_id',question_id)
+						console.log(titles[i].value)
+						formData.append('answer_title',titles[i].value)
+						formData.append('is_correct',is_correct[i].checked ? 1 : 0)
+						fetch('<?php echo base_url('answer/store'); ?>', {
+							method: 'POST',
+							body: formData,
+						}).then(()=>fetch_questions())
+					}
+					modal.hide()
+					document.getElementById('add_question_form').reset()
+					document.getElementById('add_answer_form').reset()
+				})
 			})
 		})
 
-		document.addEventListener('DOMContentLoaded',()=>{
+
+		function delete_handler(){
 			const buttons=document.querySelectorAll('.btn-delete');
 
 			buttons.forEach(button => {
-					button.addEventListener('click',function(){
-						const id=this.getAttribute('data-id')
-						const row=document.querySelector(`tr[data-id="${id}"]`)
+				button.addEventListener('click',function(){
+					const id=this.getAttribute('data-id')
+					const row=document.querySelector(`tr[data-id="${id}"]`)
 
-						fetch('<?php echo base_url('question/delete'); ?>',{
-							method:'POST',
-							headers: {
-								'Content-Type': 'application/x-www-form-urlencoded',
-							},
-							body:`question_id=${id}`
-						})
-						row.remove()
+					fetch('<?php echo base_url('question/delete'); ?>',{
+						method:'POST',
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+						},
+						body:`question_id=${id}`
 					})
+					row.remove()
 				})
 			})
+		}
+
+		function fetch_questions() {
+			fetch('<?php echo base_url('question/fetch'); ?>')
+				.then((response) => response.json())
+				.then((data) => {
+					console.log(data)
+					const tableBody = document.getElementById('questions_table_body');
+					tableBody.innerHTML = '';
+
+					let counter = 1;
+					for (const questionId in data) {
+						const question = data[questionId];
+
+						let answersHtml = question.answers
+							.map(
+								(answer) => `
+                                    <div>
+                                        ${answer.answer_title} ${
+									answer.is_correct ? '<i class="bi bi-hand-thumbs-up"></i>' : ''
+								}
+                                    </div>
+                                    <hr>
+                                `
+							)
+							.join('');
+
+						tableBody.innerHTML += `
+                            <tr data-id="${questionId}">
+                                <td class="border-1 p-3">${counter++}</td>
+                                <td class="border-1 p-3">${question.question_title}</td>
+                                <td class="border-1 p-3">${answersHtml}</td>
+                                <td class="border-1 p-3">
+                                    <button class="btn-delete btn btn-danger mb-1" data-id="${questionId}">Delete</button>
+                                    <form method="POST">
+                                        <input type="submit" value="Edit">
+                                    </form>
+                                </td>
+                            </tr>
+                        `;
+					}
+
+					delete_handler();
+				});
+		}
+
 	</script>
 	</body>
 </html>

@@ -59,6 +59,7 @@ $route['login/authenticate']='AuthController/login';
 $route['logout']='AuthController/logout';
 
 $route['question']='QuestionController';
+$route['question/fetch']='QuestionController/fetch';
 $route['question/store']='QuestionController/store';
 $route['question/delete']='QuestionController/delete';
 

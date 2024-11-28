@@ -6,11 +6,17 @@ class QuestionController extends CI_Controller{
 		parent::__construct();
 		$this->load->model('QuestionModel');
 	}
+
+
 	public function index(): void {
 		if (!$this->session->userdata('logged_in')) {
 			redirect('login');
 		}
 
+		$this->load->view('question');
+	}
+
+	public function fetch(){
 		$raw_questions = $this->QuestionModel->fetch();
 
 		$questions = [];
@@ -28,8 +34,7 @@ class QuestionController extends CI_Controller{
 				'is_correct' => $row['is_correct'],
 			];
 		}
-
-		$this->load->view('question', ['questions' => $questions]);
+		echo json_encode($questions);
 	}
 
 	public function store(): void{
