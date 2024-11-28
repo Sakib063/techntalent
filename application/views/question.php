@@ -136,7 +136,6 @@
 					for(let i=0;i<titles.length;i++){
 						formData = new FormData()
 						formData.append('question_id',question_id)
-						console.log(titles[i].value)
 						formData.append('answer_title',titles[i].value)
 						formData.append('is_correct',is_correct[i].checked ? 1 : 0)
 						fetch('<?php echo base_url('answer/store'); ?>', {
@@ -152,87 +151,88 @@
 		})
 
 		function edit_handler(data) {
-			const buttons = document.querySelectorAll('.btn-edit');
+			const buttons = document.querySelectorAll('.btn-edit')
 
 			buttons.forEach((button) => {
 				button.addEventListener('click', function () {
-					const question_id = this.getAttribute('data-id');
-					const question = data[question_id];
+					const question_id = this.getAttribute('data-id')
+					const question = data[question_id]
 
-					document.getElementById('update_question').value = question.question_title;
+					document.getElementById('update_question').value = question.question_title
 
-					const updateAnswerFields = document.getElementById('update_answer_fields');
-					updateAnswerFields.innerHTML = '';
+					const updateAnswerFields = document.getElementById('update_answer_fields')
+					updateAnswerFields.innerHTML = ''
 
 					question.answers.forEach((answer, index) => {
-						const answerGroup = document.createElement('div');
-						answerGroup.classList.add('answer_group');
+						const answerGroup = document.createElement('div')
+						answerGroup.classList.add('answer_group')
 
 						answerGroup.innerHTML = `
 					<label for="title_${index}">Answer</label>
 					<input id="title_${index}" name="title[]" value="${answer.answer_title}" class="form-control" required>
 					<br>
+					<input type="hidden" name="answer_id[]" value="${answer.answer_id}">
 					<label for="is_correct_${index}">Is Correct?</label>
 					<input id="is_correct_${index}" type="checkbox" name="is_correct[]" class="form-check-input" ${
 							Number(answer.is_correct) === 1 ? 'checked' : ''
 						}>
 					<br>
-				`;
+				`
 
 						updateAnswerFields.appendChild(answerGroup);
-					});
+					})
 
 					const updateModal = bootstrap.Modal.getOrCreateInstance(
 						document.getElementById('update_question_modal')
-					);
-					updateModal.show();
+					)
+					updateModal.show()
 
 					document.getElementById('submit_update').onclick = function () {
-						submit_update(question_id);
-					};
-				});
-			});
+						submit_update(question_id)
+					}
+				})
+			})
 		}
 
 		function submit_update(question_id) {
-			const question_title = document.getElementById('update_question').value;
-			const titles = document.getElementsByName('title[]');
-			const isCorrects = document.getElementsByName('is_correct[]');
+			const question_title = document.getElementById('update_question').value
+			const titles = document.getElementsByName('title[]')
+			const is_correct = document.getElementsByName('is_correct[]')
+			const answer_id = document.getElementsByName('answer_id[]')
 
-			let formData = new FormData();
-			formData.append('question_id', question_id);
-			formData.append('question_title', question_title);
+			let formData = new FormData()
+			formData.append('question_id', question_id)
+			formData.append('question_title', question_title)
 
 			fetch('<?php echo base_url('question/update'); ?>', {
 				method: 'POST',
 				body: formData,
 			}).then(response => response.json())
 				.then(data=>{
-					console.log('quest',data)
-					for (let i = 0; i < titles.length; i++) {
-						let formData = new FormData();
-						formData.append('answer_title', titles[i].value);
-						formData.append('is_correct', isCorrects[i].checked ? 1 : 0);
-
+					for (let i = 0; i<titles.length; i++) {
+						let formData = new FormData()
+						formData.append('answer_id',answer_id[i].value)
+						formData.append('answer_title', titles[i].value)
+						formData.append('is_correct', is_correct[i].checked ? 1 : 0)
 						fetch('<?php echo base_url('answer/update'); ?>', {
 							method: 'POST',
 							body: formData,
-						});
+						})
 					}
 				})
 				.then(() => {
-					fetch_questions();
+					fetch_questions()
 					const updateModal = bootstrap.Modal.getOrCreateInstance(
 						document.getElementById('update_question_modal')
-					);
-					updateModal.hide();
+					)
+					updateModal.hide()
 				});
 		}
 
 
 
 		function delete_handler(){
-			const buttons=document.querySelectorAll('.btn-delete');
+			const buttons=document.querySelectorAll('.btn-delete')
 
 			buttons.forEach(button => {
 				button.addEventListener('click',function(){
@@ -256,11 +256,11 @@
 				.then((response) => response.json())
 				.then((data) => {
 					const tableBody = document.getElementById('questions_table_body');
-					tableBody.innerHTML = '';
+					tableBody.innerHTML = ''
 
 					let counter = 1;
 					for (const questionId in data) {
-						const question = data[questionId];
+						const question = data[questionId]
 
 						let answersHtml = question.answers
 							.map(
@@ -273,7 +273,7 @@
                                     <hr>
                                 `
 							)
-							.join('');
+							.join('')
 
 						tableBody.innerHTML += `
                             <tr data-id="${questionId}">
@@ -285,11 +285,11 @@
                                     <button class="btn-edit btn btn-warning mb-1" data-id="${questionId}">Edit</button>
                                 </td>
                             </tr>
-                        `;
+                        `
 					}
 
-					delete_handler();
-					edit_handler(data);
+					delete_handler()
+					edit_handler(data)
 				});
 		}
 

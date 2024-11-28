@@ -30,6 +30,7 @@ class QuestionController extends CI_Controller{
 				];
 			}
 			$questions[$question_id]['answers'][] = [
+				'answer_id' => $row['answer_id'],
 				'answer_title' => $row['answer_title'],
 				'is_correct' => $row['is_correct'],
 			];
@@ -48,12 +49,8 @@ class QuestionController extends CI_Controller{
 	public function update(){
 		$question_id = $this->input->post('question_id');
 		$question_title = $this->input->post('question_title');
-		$update_status = $this->QuestionModel->update($question_id,$question_title);
-		if ($update_status) {
-			echo json_encode(['success' => true]);
-		} else {
-			echo json_encode(['success' => false, 'message' => 'Failed to update the question']);
-		}
+		$this->QuestionModel->update($question_id,$question_title);
+		echo json_encode(['success' => true]);
 	}
 
 	public function delete(): void{

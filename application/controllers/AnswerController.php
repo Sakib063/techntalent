@@ -18,13 +18,8 @@ class AnswerController extends CI_Controller{
 	public function update(){
 		$answers = $this->input->post('answers');
 		foreach ($answers as $answer) {
-			$update_status=$this->AnswerModel->update($answer['id'],$answer['answer_title'],$answer['is_correct']);
+			$this->AnswerModel->update($answer['id'],$answer['answer_title'],$answer['is_correct']);
 		}
-
-		if ($update_status) {
-			echo json_encode(['success' => true]);
-		} else {
-			echo json_encode(['success' => false, 'message' => 'Failed to update the answer']);
-		}
+		echo json_encode(['success answer' => true]);
 	}
 }
