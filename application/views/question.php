@@ -108,8 +108,13 @@
 				  <label for="is_correct_${count}">Is Correct?</label>
 				  <input id="is_correct_${count}" type="checkbox" name="is_correct[]" class="form-check-input">
 				  <br>
+				  <button id="remove_field_button" class="btn btn-danger">Remove Field</button>
 				`
 				document.getElementById('answer_fields').appendChild(add_answer_group)
+
+				add_answer_group.querySelector('#remove_field_button').addEventListener('click',function(){
+					add_answer_group.remove();
+				});
 
 				count++
 			})
@@ -169,11 +174,11 @@
 
 						answerGroup.innerHTML = `
 					<label for="title_${index}">Answer</label>
-					<input id="title_${index}" name="title[]" value="${answer.answer_title}" class="form-control" required>
+					<input id="title_${index}" name="update_title[]" value="${answer.answer_title}" class="form-control" required>
 					<br>
-					<input type="hidden" name="answer_id[]" value="${answer.answer_id}">
+					<input type="hidden" name="update_answer_id[]" value="${answer.answer_id}">
 					<label for="is_correct_${index}">Is Correct?</label>
-					<input id="is_correct_${index}" type="checkbox" name="is_correct[]" class="form-check-input" ${
+					<input id="is_correct_${index}" type="checkbox" name="update_is_correct[]" class="form-check-input" ${
 							Number(answer.is_correct) === 1 ? 'checked' : ''
 						}>
 					<br>
@@ -196,9 +201,9 @@
 
 		function submit_update(question_id) {
 			const question_title = document.getElementById('update_question').value
-			const titles = document.getElementsByName('title[]')
-			const is_correct = document.getElementsByName('is_correct[]')
-			const answer_id = document.getElementsByName('answer_id[]')
+			const titles = document.getElementsByName('update_title[]')
+			const is_correct = document.getElementsByName('update_is_correct[]')
+			const answer_id = document.getElementsByName('update_answer_id[]')
 
 			let formData = new FormData()
 			formData.append('question_id', question_id)
@@ -209,6 +214,7 @@
 				body: formData,
 			}).then(response => response.json())
 				.then(data=>{
+					console.log('data',data)
 					for (let i = 0; i<titles.length; i++) {
 						let formData = new FormData()
 						formData.append('answer_id',answer_id[i].value)
@@ -219,6 +225,9 @@
 							body: formData,
 						})
 					}
+				})
+				.then(data=>{
+					console.log('data',data)
 				})
 				.then(() => {
 					fetch_questions()
