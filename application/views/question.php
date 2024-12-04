@@ -183,7 +183,6 @@
 						}>
 					<br>
 				`
-
 						updateAnswerFields.appendChild(answerGroup);
 					})
 
